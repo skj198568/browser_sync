@@ -7,7 +7,7 @@
 `composer require workerman/workerman`
 #### 下载文件，并覆盖本地代码
 
-基于nodejs的浏览器自动刷新，现已有http://www.browsersync.cn/，该工具实现了代码修改浏览器自动刷新功能。据说能提高约30%的开发效率，但是必须得安装nodejs，node比较耗资源，而且对于php开发人员来说维护起来比较麻烦。故开发php版本的同步刷新工具。基于workerman+tp5，算是使用tp5框架的php开发者的一个福音吧，tp3可以对应的仿照实现。
+基于nodejs的浏览器自动刷新，现已有[http://www.browsersync.cn/](http://www.browsersync.cn/)，该工具实现了代码修改浏览器自动刷新功能。据说能提高约30%的开发效率，但是必须得安装nodejs，node比较耗资源，而且对于php开发人员来说维护起来比较麻烦。故开发php版本的同步刷新工具。基于workerman+tp5，算是使用tp5框架的php开发者的一个福音吧，tp3可以对应的仿照实现。
 ## 使用方式
 项目根目录执行  
 ```
