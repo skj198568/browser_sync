@@ -46,7 +46,7 @@ class BrowserSync extends Command
      * pid file
      * @var string
      */
-    private $woker_man_pid_file = LOG_PATH . 'browser_sync.pid';
+    private $worker_man_pid_file = LOG_PATH . 'browser_sync.pid';
 
     /**
      * log file
@@ -143,7 +143,7 @@ class BrowserSync extends Command
         //进程名称
         $worker->name = __FILE__;
         //设置进程id文件地址
-        $worker::$pidFile = $this->woker_man_pid_file;
+        $worker::$pidFile =$this->worker_man_pid_file;
         //设置日志文件
         $worker::$logFile = $this->worker_man_log_file;
         $worker->onWorkerStart = function ($worker) {
@@ -153,9 +153,9 @@ class BrowserSync extends Command
                 $this->port($this->socket_port);
                 if ($this->fileIsModify()) {
                     foreach ($worker->connections as $connection_each) {
+                        usleep(50000);
                         $connection_each->close('sync');
                     }
-                    var_dump(count($this->scan_files));
                 }
             });
         };
@@ -164,6 +164,7 @@ class BrowserSync extends Command
             $this->port(-1);
             //刷新页面
             foreach ($worker->connections as $connection_each) {
+                usleep(50000);
                 $connection_each->close('sync');
             }
         };
@@ -186,7 +187,7 @@ class BrowserSync extends Command
                 //该文件修改时间小于安全时间，则判断当前监听无效
                 if (filemtime($this->worker_man_port_file) + 2 < time()) {
                     //清除无效文件
-                    foreach ([$this->worker_man_port_file, $this->woker_man_pid_file, $this->worker_man_log_file] as $file) {
+                    foreach ([$this->worker_man_port_file,$this->worker_man_pid_file, $this->worker_man_log_file] as $file) {
                         if (is_file($file)) {
                             unlink($file);
                         }
@@ -263,6 +264,7 @@ class BrowserSync extends Command
         } else {
             foreach ($scan_files as $file => $modify_time) {
                 if (!array_key_exists($file, $last_scan_files) || $last_scan_files[$file] != $modify_time) {
+                    echo sprintf("[%s] %s\n", date('Y-m-d H:i:s'), $file);
                     $has_modify = true;
                     break;
                 }
