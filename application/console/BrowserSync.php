@@ -94,7 +94,7 @@ class BrowserSync extends Command
             ->addOption('--dirs', '-d', Option::VALUE_REQUIRED, '监听web根目录下变化的文件夹，分号分割，例如：application;public', 'application;public')
             ->addOption('--port', '-p', Option::VALUE_REQUIRED, 'socket监听的端口，注意防火墙的设置', '8000')
             ->addOption('--command', '-c', Option::VALUE_REQUIRED, 'start/启动，start-d/启动（守护进程），status/状态, restart/重启，reload/平滑重启，stop/停止', 'start')
-            ->setDescription('监听服务器文件，当文件修改时，自动同步刷新浏览器');
+            ->setDescription('Monitor the server file, automatically refresh the browser when the file is modified[监听服务器文件，当文件修改时，自动同步刷新浏览器].');
     }
 
     /**
@@ -106,6 +106,9 @@ class BrowserSync extends Command
     protected function execute(Input $input, Output $output)
     {
         set_time_limit(0);
+        if (!is_dir(LOG_PATH)) {
+            $this->dirCreate(LOG_PATH);
+        }
         $this->output_object = $output;
         $this->input_object = $input;
         $this->socket_port = $input->getOption('port');
@@ -143,7 +146,7 @@ class BrowserSync extends Command
         //进程名称
         $worker->name = __FILE__;
         //设置进程id文件地址
-        $worker::$pidFile =$this->worker_man_pid_file;
+        $worker::$pidFile = $this->worker_man_pid_file;
         //设置日志文件
         $worker::$logFile = $this->worker_man_log_file;
         $worker->onWorkerStart = function ($worker) {
@@ -187,7 +190,7 @@ class BrowserSync extends Command
                 //该文件修改时间小于安全时间，则判断当前监听无效
                 if (filemtime($this->worker_man_port_file) + 2 < time()) {
                     //清除无效文件
-                    foreach ([$this->worker_man_port_file,$this->worker_man_pid_file, $this->worker_man_log_file] as $file) {
+                    foreach ([$this->worker_man_port_file, $this->worker_man_pid_file, $this->worker_man_log_file] as $file) {
                         if (is_file($file)) {
                             unlink($file);
                         }
@@ -343,6 +346,53 @@ class BrowserSync extends Command
     private function getSuffix($file)
     {
         return isset(pathinfo($file)['extension']) ? strtolower(pathinfo($file)['extension']) : '';
+    }
+
+    /**
+     * 是否是win环境
+     * @return bool
+     */
+    private function isWin()
+    {
+        return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+    }
+
+    /**
+     * 无限新建文件夹，支持linux和windows目录
+     * @param $absolute_file_name 待创建的文件，例如：C:\workspace\PhpStorm\CC\WebSite\Application\Runtime\Logs/Home//DDD/14_08_07.log
+     * @param bool $is_file 传入的是否是文件，如果是文件则不进行文件、文件夹的自动判断
+     * @return string
+     */
+    private function dirCreate($absolute_file_name, $is_file = false)
+    {
+        $file_name = trim(str_replace('\\', '/', $absolute_file_name), '/');
+        $dir_array = explode('/', $file_name);
+        if ($this->isWin()) {
+            $dir_str = '';
+        } else {
+            $dir_str = '/';
+        }
+        if (empty($dir_array[0])) {
+            //去除为空的数据
+            array_shift($dir_array);
+        }
+        //第一个目录不判断
+        $dir_str .= $dir_array[0];
+        array_shift($dir_array);
+        //判断最后一个是文件还是文件夹
+        if ($is_file) {
+            $min_limit = 1;
+        } else {
+            $min_limit = empty($this->getSuffix($file_name)) ? 0 : 1;
+        }
+        while (is_array($dir_array) && count($dir_array) > $min_limit) {
+            $dir_str .= '/' . $dir_array[0];
+            if (!is_dir($dir_str)) {
+                mkdir($dir_str, 0777, true);
+            }
+            array_shift($dir_array);
+        }
+        return $dir_str;
     }
 
     /**
