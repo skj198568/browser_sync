@@ -75,4 +75,12 @@ php think browser_sync -p 6000
     };
 </script>
 ```
+如浏览器不需要刷新，则在url后拼接
+```
+url?browser_sync=0
+```
+恢复刷新，则拼接
+```
+url?browser_sync=1
+```
 这时，修改任意被监听的代码，则浏览器会自动刷新。

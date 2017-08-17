@@ -219,6 +219,13 @@ class BrowserSync extends Command
         if (empty($port)) {
             return '';
         }
+        if(input('browser_sync', 1) == 0 || cookie('?browser_sync')){
+            cookie('browser_sync', 0, 3600*10);
+            return '';
+        }else{
+            //删除cookie
+            cookie('browser_sync', null);
+        }
         return sprintf('<script type="text/javascript">
     var ws = new WebSocket(\'ws://%s:%s\');
     ws.onclose = function(){
